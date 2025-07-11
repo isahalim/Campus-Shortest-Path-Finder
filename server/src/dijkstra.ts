@@ -13,7 +13,7 @@ export type Path =
 
 // Compares two paths by distance, shorter paths have higher priority
 // (positive number if a < b, negative number if a > b, 0 if a = b)
-const comparePaths = (a: Path, b: Path): number => a.dist - b.dist;
+const comparePaths = (a: Path, b: Path): number => b.dist - a.dist;
 
 // Converts a location to a string that can be used as a map key.
 const toKey = (loc: Location): string => `(${loc.x}, ${loc.y})`;

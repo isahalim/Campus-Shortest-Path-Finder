@@ -25,7 +25,7 @@ export class App extends Component<AppProps, AppState> {
   constructor(props: AppProps) {
     super(props);
 
-    // TODO (task 2): remove 'buildings: [...], savedPaths: [...]' from state, and start debugging!
+    // TODO (task 2): remove 'buildings: [...], savedPaths: [...]' from state
     this.state = {
       buildings: [{shortName: "INT", longName: "24-hr-internship", location: {x: 1500, y: 1500}},
                   {shortName: "COF", longName: "Black Coffee Machine", location: {x: 2500, y: 2500}}],
@@ -35,9 +35,10 @@ export class App extends Component<AppProps, AppState> {
   }
 
   componentDidMount = (): void => {
-    fetch('/api/data')
-      .then(this.doAppDataResp)
-      .catch((ex) => this.doAppDataError(`failed to connect ${ex}`));
+    // TODO (task 2): uncomment the fetch request below, and start debugging!
+    // fetch('/api/data')
+    //   .then(this.doAppDataResp)
+    //   .catch((ex) => this.doAppDataError(`failed to connect ${ex}`));
   }
 
   render = (): JSX.Element => {

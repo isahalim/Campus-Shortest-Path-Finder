@@ -8,7 +8,7 @@ type SafeRequest = Request<ParamsDictionary, {}, Record<string, unknown>>;
 type SafeResponse = Response;  // only writing, so no need to check
 
 // TODO (task 5): use this to store saved paths sent from client
-const savedPaths: Array<[string, string]> = new Array<[string, string]>();
+const savedPaths: Array<[Building, Building]> = new Array<[Building, Building]>();
 
 /**
  * Responds with lists of app data including a list of campus buildings and

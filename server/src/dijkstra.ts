@@ -72,7 +72,7 @@ export const shortestPath = (
   const active = newPriorityQueue(comparePaths);
 
   // Continue to explore while we have paths remaining.
-  while (!active.isEmpty) {
+  while (!active.first()) {
     // get highest priority item from queue of active paths
     const path = active.removeFirst();
     if (sameLocation(path.end, end))

@@ -81,3 +81,26 @@ export const parseEndpointPairs = (data: unknown): [Building, Building][] => {
 
 
 // TODO: add functions to do other unknown data parsing, as needed
+
+/** Parses JSON data containing a building. */
+export const parsePath = (e: unknown): Edge => {
+  if (!isRecord(e))
+    throw new Error(`edge is not a record: ${typeof e}`)
+  
+  return {
+    start: parseLocation(e.start),
+    end: parseLocation(e.end),
+  }
+}
+
+/** Parses JSON data containing an array of Edges */
+export const parsePaths = (data: unknown): Array<Edge> => {
+  if (!Array.isArray(data))
+    throw new Error(`data not an array: ${typeof data}`);
+
+  const edges: Array<Edge> = [];
+  for (const e of data) {
+    edges.push(parsePath(e));
+  }
+  return edges;
+};

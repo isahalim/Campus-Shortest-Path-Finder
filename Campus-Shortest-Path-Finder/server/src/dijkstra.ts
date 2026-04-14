@@ -43,10 +43,12 @@ const exploreChildren = (active: PriorityQueue<Path>, finished: Set<string>, pat
       const childKey = toKey(edge.end);
       if (!finished.has(childKey)) {
         // put our new edge into the path since we are not finished
-        path.steps.push(edge);
+        const newPath = path.steps.concat(edge);
         active.add({
-            start: path.start, end: edge.end,
-            steps: path.steps, dist: path.dist + edge.dist
+            start: path.start, 
+            end: edge.end,
+            steps: newPath, 
+            dist: path.dist + edge.dist
           });
       }
     }
@@ -71,8 +73,16 @@ export const shortestPath = (
   // Queue of paths outgoing from not yet explored nodes
   const active = newPriorityQueue(comparePaths);
 
+  //Add the zero step
+  active.add({ 
+    start: _start, 
+    end: _start, 
+    steps: [], 
+    dist: 0 
+  });
+  
   // Continue to explore while we have paths remaining.
-  while (!active.first()) {
+  while (!active.isEmpty()) {
     // get highest priority item from queue of active paths
     const path = active.removeFirst();
     if (sameLocation(path.end, end))
@@ -81,8 +91,10 @@ export const shortestPath = (
     const endKey = toKey(path.end);
     if (finished.has(endKey))
       continue;
+
     finished.add(endKey);
 
+    // add all paths that have one step added to this shortest path
     exploreChildren(active, finished, path, graph.get(endKey));
   }
 

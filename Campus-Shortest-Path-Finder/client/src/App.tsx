@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { isRecord, Building, Edge, parseBuildings, parseEndpointPairs } from './types';
+import { isRecord, Building, Edge, parseBuildings, parseEndpointPairs, parseEndpoints, parsePaths } from './types';
 import { Editor } from './Editor';
 import campusMap from './img/campus_map.jpg';
 import './App.css'
@@ -26,19 +26,14 @@ export class App extends Component<AppProps, AppState> {
     super(props);
 
     // TODO (task 2): remove 'buildings: [...], savedPaths: [...]' from state
-    this.state = {
-      buildings: [{shortName: "INT", longName: "24-hr-internship", location: {x: 1500, y: 1500}},
-                  {shortName: "COF", longName: "Black Coffee Machine", location: {x: 2500, y: 2500}}],
-      savedPaths: [[{shortName: "INT", longName: "24-hr-internship", location: {x: 1500, y: 1500}},
-                  {shortName: "COF", longName: "Black Coffee Machine", location: {x: 2500, y: 2500}}]]
-    };
+    this.state = {};
   }
 
   componentDidMount = (): void => {
     // TODO (task 2): uncomment the fetch request below, and start debugging!
-    // fetch('/api/data')
-    //   .then(this.doAppDataResp)
-    //   .catch((ex) => this.doAppDataError(`failed to connect ${ex}`));
+    fetch('/api/appData')
+       .then(this.doAppDataResp)
+       .catch(() => this.doAppDataError("failed to connect"));
   }
 
   render = (): JSX.Element => {
@@ -100,17 +95,19 @@ export class App extends Component<AppProps, AppState> {
   };
 
   // Parses JSON data received from app data fetch.
-  doAppDataError = (data: unknown): void => {
+  doAppDataJson = (data: unknown): void => {
     if (!isRecord(data))
       throw new Error(`data is not a record: ${typeof data}`);
 
-    const buildings = parseBuildings(data);
-    const savedPaths = parseEndpointPairs(data);
+    const buildingData = data.buildings;
+    const savedPathsData = data.savedPaths;
+    const buildings = parseBuildings(buildingData);
+    const savedPaths = parseEndpointPairs(savedPathsData);
     this.setState({buildings: buildings, savedPaths: savedPaths});
   };
 
   // Presents error messages related to fetching app data
-  doAppDataJson = (msg: string): void => {
+  doAppDataError = (msg: string): void => {
     console.error(`fetch of app data failed. ${msg}`)
   };
 
@@ -120,12 +117,42 @@ export class App extends Component<AppProps, AppState> {
     this.setState({endPoints: endPoints, path: undefined});
     // if undefined, no path to show
     if (endPoints !== undefined) {
-      const [start, end] = endPoints;
+      const [start, end] = parseEndpoints(endPoints);
       console.log(`Finding a path between "${start.longName}" and "${end.longName}"`);
       // TODO (task 4): fetch the shortest path and add helper functions to parse response
+      const params = new URLSearchParams({
+        start: start.shortName,
+        end: end.shortName,
+      })
 
+      fetch(`/api/shortestPath?${params.toString()}`)
+        .then(this.doShortestPathResp)
+        .catch(() => this.doShortestPathError("failed to connect"));
     }
   };
+
+  doShortestPathResp = (res: Response): void => {
+    if (res.status === 200) {
+      res.json()
+        .then(this.doShortestPathJson)
+        .catch((msg) => this.doShortestPathError(`Error parsing 200 response. ${msg}`));
+    } else {
+      this.doShortestPathError(`bad status code: ${res.status}`);
+    }
+  }
+
+  doShortestPathJson = (data: unknown): void => {
+    if (!isRecord(data))
+      throw new Error(`data is not a record: ${typeof data}`);
+
+    const pathData = data.steps;
+    const path = parsePaths(pathData);
+    this.setState({path: path});
+  };
+
+  doShortestPathError = (msg: string): void => {
+    console.error(`fetch of shortest path failed. ${msg}`)
+  }
 
 
   // Called when user clicks to save a path, saves on server
@@ -133,5 +160,38 @@ export class App extends Component<AppProps, AppState> {
     const [start, end] = endPoints;
     // TODO (task 5): save path on server and add helper functions to parse response
     console.log(`Saving path between "${start}" and "${end}"`);
+
+    fetch('/api/savedPaths', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({start, end}),
+    })
+       .then(this.doSavedPathsResp)
+       .catch(() => this.doSavedPathsError("failed to connect"));
+  };
+
+  doSavedPathsResp = (res: Response): void => {
+    if (res.status === 200) {
+      res.json()
+        .then(this.doSavedPathsJson)
+        .catch((msg) => this.doSavedPathsError(`Error parsing 200 response. ${msg}`));
+    } else {
+      this.doSavedPathsError(`bad status code: ${res.status}`);
+    }
+  }
+
+  doSavedPathsJson = (data: unknown): void => {
+    if (!isRecord(data))
+      throw new Error(`data is not a record: ${typeof data}`);
+
+    const savedPathsData = data.savedPaths;
+    const savedPaths = parseEndpointPairs(savedPathsData);
+    this.setState({savedPaths: savedPaths});
+  };
+
+  doSavedPathsError = (msg: string): void => {
+    console.error(`fetch of saved paths failed. ${msg}`)
   }
 }

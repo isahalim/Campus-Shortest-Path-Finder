@@ -1,4 +1,4 @@
-# Campus Paths (CSE 331 HW3)
+# Campus Shortest Path Finder
 
 This repository contains the Campus Paths application, a full-stack web application that allows users to find the shortest walking path between buildings on campus using an interactive web interface.
 
